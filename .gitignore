@@ -27,3 +27,4 @@ desktop.ini
 # Build output (if any)
 dist/
 build/
+.vercel

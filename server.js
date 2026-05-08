@@ -10,6 +10,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy headers (required on Vercel) so secure cookies work correctly.
+// Without this, req.secure may be false behind the proxy and cookies won't be set.
+app.set('trust proxy', 1);
+
 // OAuth credentials
 // For local development: hardcoded values below
 // For production (Vercel): MUST be set as environment variables
@@ -35,8 +39,10 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'github-uploader-secret-key-change-this',
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     secure: process.env.NODE_ENV === 'production', // true in production (HTTPS)
+    sameSite: 'lax',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -50,8 +56,39 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/renderer', express.static(path.join(__dirname, 'renderer')));
 
 // ─── Authentication Middleware ─────────────────────────────────────────────
+function parseCookies(req) {
+  const header = req.headers?.cookie;
+  if (!header) return {};
+  const out = {};
+  for (const part of header.split(';')) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const key = part.slice(0, idx).trim();
+    const val = part.slice(idx + 1).trim();
+    out[key] = decodeURIComponent(val);
+  }
+  return out;
+}
+
+function serializeCookie(name, value, opts = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`];
+  parts.push(`Path=${opts.path || '/'}`);
+  if (opts.httpOnly) parts.push('HttpOnly');
+  if (opts.secure) parts.push('Secure');
+  if (opts.sameSite) parts.push(`SameSite=${opts.sameSite}`);
+  if (typeof opts.maxAge === 'number') parts.push(`Max-Age=${Math.floor(opts.maxAge)}`);
+  return parts.join('; ');
+}
+
+function getAccessToken(req) {
+  if (req.session?.accessToken) return req.session.accessToken;
+  const cookies = parseCookies(req);
+  return cookies.github_access_token || null;
+}
+
 function requireAuth(req, res, next) {
-  if (!req.session || !req.session.accessToken) {
+  const token = getAccessToken(req);
+  if (!token) {
     console.error('❌ Authentication failed: No session or access token');
     return res.status(401).json({
       error: 'Not authenticated. Please refresh the page and log in again.'
@@ -74,14 +111,15 @@ app.get('/setup', (req, res) => {
 
 // Check auth status
 app.get('/api/auth/status', async (req, res) => {
-  if (!req.session.accessToken) {
+  const token = getAccessToken(req);
+  if (!token) {
     return res.json({ authenticated: false });
   }
 
   try {
     const response = await axios.get('https://api.github.com/user', {
       headers: {
-        'Authorization': `Bearer ${req.session.accessToken}`,
+        'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json'
       }
     });
@@ -188,8 +226,19 @@ app.get('/auth/github/callback', async (req, res) => {
       return res.redirect('/?error=no_token');
     }
 
-    // Save token in session
+    // Save token in session (best-effort; mainly for local dev)
     req.session.accessToken = accessToken;
+
+    // Also persist token in an HttpOnly cookie for serverless deployments (Vercel),
+    // where in-memory sessions are not reliable across invocations.
+    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+    res.setHeader('Set-Cookie', serializeCookie('github_access_token', accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: 'Lax',
+      path: '/',
+      maxAge: 24 * 60 * 60
+    }));
 
     // Redirect to home
     res.redirect('/?login=success');
@@ -202,6 +251,14 @@ app.get('/auth/github/callback', async (req, res) => {
 // Logout
 app.post('/api/auth/logout', (req, res) => {
   req.session.destroy();
+  const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+  res.setHeader('Set-Cookie', serializeCookie('github_access_token', '', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 0
+  }));
   res.json({ success: true });
 });
 
@@ -226,7 +283,7 @@ app.post('/api/upload', requireAuth, upload.single('folder'), async (req, res) =
   console.log(`📦 Zip file size: ${(zipFile.size / 1024 / 1024).toFixed(2)} MB`);
 
   try {
-    const accessToken = req.session.accessToken;
+    const accessToken = getAccessToken(req);
     const isPrivateRepo = isPrivate === 'true';
 
     // Extract zip file
