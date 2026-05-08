@@ -44,10 +44,10 @@ app.use(session({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve renderer files from /renderer route
-app.use('/renderer', express.static('renderer'));
+app.use('/renderer', express.static(path.join(__dirname, 'renderer')));
 
 // ─── Authentication Middleware ─────────────────────────────────────────────
 function requireAuth(req, res, next) {
