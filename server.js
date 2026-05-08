@@ -23,8 +23,10 @@ if (process.env.NODE_ENV === 'production' && (!process.env.GITHUB_CLIENT_ID || !
 }
 
 // Configure multer for file uploads
+// In Vercel, use /tmp directory; locally use uploads/
+const uploadDir = process.env.VERCEL ? '/tmp' : 'uploads/';
 const upload = multer({
-  dest: 'uploads/',
+  dest: uploadDir,
   limits: { fileSize: 500 * 1024 * 1024 } // 500MB limit
 });
 
@@ -469,23 +471,28 @@ function getAllFiles(dirPath, arrayOfFiles = [], basePath = dirPath) {
   return arrayOfFiles;
 }
 
-// Create uploads directory if it doesn't exist
-if (!fs.existsSync('uploads')) {
+// Create uploads directory if it doesn't exist (only in non-serverless mode)
+if (!process.env.VERCEL && !fs.existsSync('uploads')) {
   fs.mkdirSync('uploads');
 }
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`\n🚀 GitHub Uploader running at: http://localhost:${PORT}`);
-  console.log(`\n✨ Ready to use! Just open the URL and click "Login with GitHub"\n`);
+// For Vercel serverless: export the app
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  // For local development: start the server
+  app.listen(PORT, () => {
+    console.log(`\n🚀 GitHub Uploader running at: http://localhost:${PORT}`);
+    console.log(`\n✨ Ready to use! Just open the URL and click "Login with GitHub"\n`);
 
-  if (GITHUB_CLIENT_ID === 'your_default_client_id_here') {
-    console.log(`⚠️  Using default OAuth credentials - you should update these!`);
-    console.log(`\n📝 To set up your own OAuth app:`);
-    console.log(`   1. Create a GitHub OAuth App at: https://github.com/settings/developers`);
-    console.log(`   2. Set Authorization callback URL to: http://localhost:${PORT}/auth/github/callback`);
-    console.log(`   3. Copy .env.example to .env and add your credentials\n`);
-  } else {
-    console.log(`✓ Using custom OAuth credentials from .env\n`);
-  }
-});
+    if (GITHUB_CLIENT_ID === 'your_default_client_id_here') {
+      console.log(`⚠️  Using default OAuth credentials - you should update these!`);
+      console.log(`\n📝 To set up your own OAuth app:`);
+      console.log(`   1. Create a GitHub OAuth App at: https://github.com/settings/developers`);
+      console.log(`   2. Set Authorization callback URL to: http://localhost:${PORT}/auth/github/callback`);
+      console.log(`   3. Copy .env.example to .env and add your credentials\n`);
+    } else {
+      console.log(`✓ Using custom OAuth credentials from .env\n`);
+    }
+  });
+}
