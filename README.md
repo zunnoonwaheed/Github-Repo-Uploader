@@ -2,7 +2,7 @@
 
 A web application to drag-and-drop any local folder and push it to GitHub in one click. Each user provides their own GitHub OAuth credentials - no shared accounts!
 
-**🚀 Live Demo:** [https://github-repo-uploader.vercel.app](https://github-repo-uploader.vercel.app)
+**🚀 Live Demo:** [https://github-uploader-theta.vercel.app](https://github-uploader-theta.vercel.app)
 
 ---
 
@@ -22,7 +22,7 @@ A web application to drag-and-drop any local folder and push it to GitHub in one
 
 ### Option 1: Use the Live Version (No Installation!)
 
-1. **Visit:** [https://github-repo-uploader.vercel.app](https://github-repo-uploader.vercel.app)
+1. **Visit:** [https://github-uploader-theta.vercel.app](https://github-uploader-theta.vercel.app)
 2. Follow the setup instructions to create your GitHub OAuth App
 3. Start uploading!
 
