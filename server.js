@@ -127,24 +127,42 @@ app.get('/auth/github', (req, res) => {
   req.session.oauthClientId = clientId;
   req.session.oauthClientSecret = clientSecret;
 
+  // Also encode credentials in state parameter as backup for serverless
+  const state = Buffer.from(JSON.stringify({ clientId, clientSecret })).toString('base64');
+
   const redirectUri = `${getBaseUrl(req)}/auth/github/callback`;
   const scope = 'repo user';
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}`;
 
   res.redirect(authUrl);
 });
 
 // GitHub OAuth callback
 app.get('/auth/github/callback', async (req, res) => {
-  const { code } = req.query;
+  const { code, state } = req.query;
 
   if (!code) {
     return res.redirect('/?error=no_code');
   }
 
-  // Get credentials from session
-  const clientId = req.session.oauthClientId || GITHUB_CLIENT_ID;
-  const clientSecret = req.session.oauthClientSecret || GITHUB_CLIENT_SECRET;
+  // Try to get credentials from state parameter (for serverless compatibility)
+  let clientId, clientSecret;
+
+  if (state) {
+    try {
+      const decoded = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+      clientId = decoded.clientId;
+      clientSecret = decoded.clientSecret;
+    } catch (error) {
+      console.error('Failed to decode state parameter:', error);
+    }
+  }
+
+  // Fall back to session if state decoding failed
+  if (!clientId || !clientSecret) {
+    clientId = req.session.oauthClientId || GITHUB_CLIENT_ID;
+    clientSecret = req.session.oauthClientSecret || GITHUB_CLIENT_SECRET;
+  }
 
   if (!clientId || !clientSecret) {
     return res.redirect('/setup?error=session_expired');
