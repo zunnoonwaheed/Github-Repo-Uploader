@@ -289,7 +289,9 @@ app.post('/api/upload', requireAuth, upload.single('folder'), async (req, res) =
     // Extract zip file
     console.log('📂 Extracting zip file...');
     const zip = new AdmZip(zipFile.path);
-    const extractPath = path.join('uploads', `extracted_${Date.now()}`);
+    // Vercel serverless filesystem is read-only except /tmp
+    const extractBase = process.env.VERCEL ? '/tmp' : 'uploads';
+    const extractPath = path.join(extractBase, `extracted_${Date.now()}`);
     zip.extractAllTo(extractPath, true);
     console.log(`✅ Files extracted to: ${extractPath}`);
 
