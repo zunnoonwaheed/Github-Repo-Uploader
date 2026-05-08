@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup - GitHub Uploader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/renderer/style.css" />
+  <style>
+    body {
+      overflow-y: auto;
+      min-height: 100vh;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+    }
+
+    .app {
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .setup-container {
+      max-width: 700px;
+      margin: 20px auto 80px auto;
+      padding: 0 20px;
+    }
+
+    .setup-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .setup-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-top: 20px;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .setup-header h1 {
+      font-size: 28px;
+      color: #c9d1d9;
+      margin: 0 0 8px 0;
+    }
+
+    .setup-header p {
+      color: #8b949e;
+      margin: 0;
+    }
+
+    .setup-step {
+      margin-bottom: 32px;
+    }
+
+    .setup-step:last-child {
+      margin-bottom: 60px;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #238636;
+      color: white;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 12px;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .step-title {
+      font-size: 18px;
+      color: #c9d1d9;
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .step-content {
+      margin-left: 40px;
+      color: #8b949e;
+      line-height: 1.6;
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: #79c0ff;
+      overflow-x: auto;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      cursor: text;
+    }
+
+    .code-block:hover {
+      background: #161b22;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      display: block;
+      color: #c9d1d9;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 14px;
+      font-family: 'Space Mono', monospace;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .btn-save {
+      width: 100%;
+      padding: 12px 24px;
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .btn-save:hover {
+      background: #2ea043;
+    }
+
+    .btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .success-message {
+      background: #1a7f37;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-top: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .success-message.show {
+      display: flex;
+    }
+
+    .link-button {
+      color: #58a6ff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .link-button:hover {
+      color: #79c0ff;
+      text-decoration: underline;
+    }
+
+    .info-box {
+      background: #1f6feb20;
+      border-left: 3px solid #58a6ff;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+      color: #c9d1d9;
+      font-size: 13px;
+    }
+
+    .warning-box {
+      background: #bb800920;
+      border-left: 3px solid #d29922;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+      color: #c9d1d9;
+      font-size: 13px;
+    }
+
+    ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span class="logo-text">GitPush</span>
+      </div>
+      <div class="header-badge">Setup</div>
+    </header>
+
+    <div class="setup-container">
+      <div class="setup-header">
+        <h1>🔧 Setup Your GitHub OAuth App</h1>
+        <p>Create your own GitHub OAuth app to get started</p>
+      </div>
+
+      <div class="setup-card">
+        <div class="setup-step">
+          <h2 class="step-title">
+            <span class="step-number">1</span>
+            Create GitHub OAuth App
+          </h2>
+          <div class="step-content">
+            <p>Go to GitHub and create a new OAuth application:</p>
+            <p style="margin-top: 12px;">
+              <a href="https://github.com/settings/applications/new" target="_blank" class="link-button">
+                → Open GitHub OAuth App Creation Page
+              </a>
+            </p>
+            <p style="margin-top: 16px;">Fill in these details:</p>
+            <ul>
+              <li><strong>Application name:</strong> GitHub Uploader (or any name)</li>
+              <li><strong>Homepage URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;">http://localhost:3000</code></li>
+              <li><strong>Authorization callback URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;">http://localhost:3000/auth/github/callback</code></li>
+            </ul>
+            <div class="info-box">
+              💡 <strong>Tip:</strong> You can update these URLs later if you deploy to a custom domain.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <h2 class="step-title">
+            <span class="step-number">2</span>
+            Copy Your Credentials
+          </h2>
+          <div class="step-content">
+            <p>After creating the OAuth app, you'll see:</p>
+            <ul>
+              <li><strong>Client ID</strong> - Copy this</li>
+              <li><strong>Client Secret</strong> - Click "Generate a new client secret" and copy it</li>
+            </ul>
+            <div class="warning-box">
+              ⚠️ <strong>Important:</strong> Your credentials are stored only in your browser (localStorage). They are never sent to any server except GitHub's API.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <h2 class="step-title">
+            <span class="step-number">3</span>
+            Enter Your Credentials
+          </h2>
+          <div class="step-content">
+            <form id="setupForm">
+              <div class="input-group">
+                <label class="input-label" for="clientId">GitHub Client ID</label>
+                <input
+                  type="text"
+                  id="clientId"
+                  class="input-field"
+                  placeholder="Ov23liABC123XYZ..."
+                  required
+                />
+              </div>
+
+              <div class="input-group">
+                <label class="input-label" for="clientSecret">GitHub Client Secret</label>
+                <input
+                  type="password"
+                  id="clientSecret"
+                  class="input-field"
+                  placeholder="ghp_abc123def456..."
+                  required
+                />
+              </div>
+
+              <button type="submit" class="btn-save">
+                Save & Continue
+              </button>
+
+              <div class="success-message" id="successMessage">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <span>Credentials saved! Redirecting to login...</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('setupForm');
+    const clientIdInput = document.getElementById('clientId');
+    const clientSecretInput = document.getElementById('clientSecret');
+    const successMessage = document.getElementById('successMessage');
+
+    // Check if already configured
+    const existingClientId = localStorage.getItem('github_client_id');
+    const existingClientSecret = localStorage.getItem('github_client_secret');
+
+    if (existingClientId && existingClientSecret) {
+      clientIdInput.value = existingClientId;
+      clientSecretInput.value = existingClientSecret;
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const clientId = clientIdInput.value.trim();
+      const clientSecret = clientSecretInput.value.trim();
+
+      if (!clientId || !clientSecret) {
+        alert('Please fill in both fields');
+        return;
+      }
+
+      // Save to localStorage
+      localStorage.setItem('github_client_id', clientId);
+      localStorage.setItem('github_client_secret', clientSecret);
+
+      // Show success message
+      successMessage.classList.add('show');
+
+      // Redirect to main app
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

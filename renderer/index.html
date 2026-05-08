@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub Uploader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/renderer/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+  <!-- ── Login Screen (shown when not authenticated) ── -->
+  <div class="login-overlay" id="loginOverlay" style="display:none">
+    <div class="login-card">
+      <div class="login-header">
+        <svg class="login-logo" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <h1 class="login-title">Welcome to GitPush</h1>
+        <p class="login-subtitle">Connect your GitHub account to get started</p>
+      </div>
+
+      <div class="login-body">
+        <div class="login-status" id="loginStatus">
+          <div class="status-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <p class="status-text">Checking authentication...</p>
+        </div>
+
+        <button class="btn-login" id="loginBtn" style="display:none">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="btn-login-icon">
+            <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+          </svg>
+          <span>Login with GitHub</span>
+        </button>
+
+        <div class="login-install-notice" id="installNotice" style="display:none">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="notice-icon">
+            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/>
+          </svg>
+          <div>
+            <p class="notice-title">GitHub CLI Required</p>
+            <p class="notice-text">Please install GitHub CLI first:</p>
+            <a href="#" class="notice-link" id="installLink">Download from cli.github.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <div class="header-logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+        </svg>
+        <span class="logo-text">GitPush</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="/setup" title="OAuth Settings" style="color: #8b949e; text-decoration: none; display: flex; align-items: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"/>
+          </svg>
+        </a>
+        <div class="header-badge">v1.0</div>
+      </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main class="main">
+
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-inner">
+          <div class="drop-icon-wrap">
+            <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+          </div>
+          <p class="drop-title">Drop your folder here</p>
+          <p class="drop-subtitle">or click to browse</p>
+          <button class="btn-select" id="selectBtn">Select Folder</button>
+          <p class="drop-hint" style="margin-top: 12px; font-size: 11px; color: #8b949e;">Auto-excludes: node_modules, .git, dist, build, and other common folders</p>
+        </div>
+        <div class="drop-overlay" id="dropOverlay">
+          <span>Release to select</span>
+        </div>
+      </div>
+
+      <!-- Selected Folder Display -->
+      <div class="folder-display" id="folderDisplay" style="display:none">
+        <div class="folder-path-row">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="folder-icon-sm">
+            <path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z"/>
+          </svg>
+          <span class="folder-path-text" id="folderPathText"></span>
+          <button class="btn-clear" id="clearBtn" title="Clear selection">✕</button>
+        </div>
+      </div>
+
+      <!-- Config Row -->
+      <div class="config-row" id="configRow">
+
+        <div class="input-group">
+          <label class="input-label" for="repoName">Repository Name</label>
+          <input class="input-field" type="text" id="repoName" placeholder="my-project" autocomplete="off" spellcheck="false" />
+        </div>
+
+        <div class="toggle-group">
+          <label class="input-label">Visibility</label>
+          <div class="toggle-wrap">
+            <button class="toggle-pill" id="visibilityToggle" data-private="false">
+              <span class="toggle-option active" data-val="public">Public</span>
+              <span class="toggle-option" data-val="private">Private</span>
+              <span class="toggle-slider"></span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Upload Button -->
+      <button class="btn-upload" id="uploadBtn" disabled>
+        <span class="btn-upload-inner">
+          <span class="upload-text">Upload to GitHub</span>
+          <span class="upload-spinner" id="spinner" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+              <path d="M12 2a10 10 0 0110 10" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </span>
+      </button>
+
+      <!-- Console Log -->
+      <div class="console-wrap" id="consoleWrap" style="display:none">
+        <div class="console-header">
+          <div class="console-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="console-title">Output</span>
+          <button class="console-clear-btn" id="consoleClearBtn">Clear</button>
+        </div>
+        <div class="console-body" id="consoleBody"></div>
+      </div>
+
+      <!-- Success Banner -->
+      <div class="success-banner" id="successBanner" style="display:none">
+        <div class="success-content">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="success-icon">
+            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/>
+          </svg>
+          <div>
+            <p class="success-title">Uploaded successfully!</p>
+            <a class="success-url" id="successUrl" href="#" target="_blank"></a>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── Recent Folders ── -->
+    <div class="recents-section" id="recentsSection" style="display:none">
+      <p class="recents-label">Recent</p>
+      <div class="recents-list" id="recentsList"></div>
+    </div>
+
+  </div>
+
+  <script src="/renderer/renderer.js"></script>
+</body>
+</html>
