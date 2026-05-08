@@ -2,6 +2,8 @@
 
 A web application to drag-and-drop any local folder and push it to GitHub in one click. Each user provides their own GitHub OAuth credentials - no shared accounts!
 
+**🚀 Live Demo:** [https://github-repo-uploader.vercel.app](https://github-repo-uploader.vercel.app)
+
 ---
 
 ## Features
@@ -12,20 +14,28 @@ A web application to drag-and-drop any local folder and push it to GitHub in one
 - **Automatic Repository Creation** - Creates public or private repos
 - **Smart Filtering** - Auto-excludes node_modules, .git, and other unnecessary folders
 - **Real-time Progress** - Watch your upload in real-time
-- **Web-based** - No desktop app needed, runs in your browser
+- **Web-based** - Works on localhost or deployed to Vercel/any hosting
 
 ---
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Option 1: Use the Live Version (No Installation!)
+
+1. **Visit:** [https://github-repo-uploader.vercel.app](https://github-repo-uploader.vercel.app)
+2. Follow the setup instructions to create your GitHub OAuth App
+3. Start uploading!
+
+### Option 2: Run Locally
+
+1. **Install Dependencies**
 
 ```bash
 cd github-uploader
 npm install
 ```
 
-### 2. Start the Server
+2. **Start the Server**
 
 ```bash
 npm start
@@ -33,7 +43,7 @@ npm start
 
 The server will start at **http://localhost:3000**
 
-### 3. First-Time Setup
+3. **First-Time Setup**
 
 1. Open **http://localhost:3000** in your browser
 2. You'll be redirected to the **Setup Page**

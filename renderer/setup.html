@@ -268,11 +268,11 @@
             <p style="margin-top: 16px;">Fill in these details:</p>
             <ul>
               <li><strong>Application name:</strong> GitHub Uploader (or any name)</li>
-              <li><strong>Homepage URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;">http://localhost:3000</code></li>
-              <li><strong>Authorization callback URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;">http://localhost:3000/auth/github/callback</code></li>
+              <li><strong>Homepage URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;" id="homepageUrl">Loading...</code></li>
+              <li><strong>Authorization callback URL:</strong> <code class="code-block" style="display: inline; padding: 2px 6px;" id="callbackUrl">Loading...</code></li>
             </ul>
             <div class="info-box">
-              💡 <strong>Tip:</strong> You can update these URLs later if you deploy to a custom domain.
+              💡 <strong>Tip:</strong> The URLs above match your current location. You can add multiple callback URLs in GitHub (both localhost for development and your production URL).
             </div>
           </div>
         </div>
@@ -345,6 +345,18 @@
     const clientIdInput = document.getElementById('clientId');
     const clientSecretInput = document.getElementById('clientSecret');
     const successMessage = document.getElementById('successMessage');
+
+    // Set current URLs dynamically
+    const currentUrl = window.location.origin;
+    const homepageUrlElement = document.getElementById('homepageUrl');
+    const callbackUrlElement = document.getElementById('callbackUrl');
+
+    if (homepageUrlElement) {
+      homepageUrlElement.textContent = currentUrl;
+    }
+    if (callbackUrlElement) {
+      callbackUrlElement.textContent = `${currentUrl}/auth/github/callback`;
+    }
 
     // Check if already configured
     const existingClientId = localStorage.getItem('github_client_id');
